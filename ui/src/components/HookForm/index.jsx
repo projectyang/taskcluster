@@ -1,119 +1,122 @@
-import React, { Component, Fragment } from 'react';
-import { string, bool, func, oneOfType, object } from 'prop-types';
-import classNames from 'classnames';
-import { equals, assocPath } from 'ramda';
-import cloneDeep from 'lodash.clonedeep';
-import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
-import Code from '@mozilla-frontend-infra/components/Code';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import TextField from '@material-ui/core/TextField';
-import Switch from '@material-ui/core/Switch';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import Typography from '@material-ui/core/Typography';
-import FlashIcon from 'mdi-react/FlashIcon';
-import PlusIcon from 'mdi-react/PlusIcon';
-import DeleteIcon from 'mdi-react/DeleteIcon';
-import LinkIcon from 'mdi-react/LinkIcon';
-import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
-import { docs } from 'taskcluster-lib-urls';
-import Button from '../Button';
-import SpeedDial from '../SpeedDial';
-import SpeedDialAction from '../SpeedDialAction';
-import DialogAction from '../DialogAction';
-import DateDistance from '../DateDistance';
-import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
-import { hook } from '../../utils/prop-types';
-import Link from '../../utils/Link';
-import removeKeys from '../../utils/removeKeys';
+import React, { Component, Fragment } from "react";
+import { string, bool, func, oneOfType, object } from "prop-types";
+import classNames from "classnames";
+import { equals, assocPath } from "ramda";
+import cloneDeep from "lodash.clonedeep";
+import CodeEditor from "@mozilla-frontend-infra/components/CodeEditor";
+import Code from "@mozilla-frontend-infra/components/Code";
+import Markdown from "@mozilla-frontend-infra/components/Markdown";
+import { withStyles } from "@material-ui/core/styles";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListSubheader from "@material-ui/core/ListSubheader";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import TextField from "@material-ui/core/TextField";
+import Switch from "@material-ui/core/Switch";
+import FormGroup from "@material-ui/core/FormGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Grid from "@material-ui/core/Grid";
+import IconButton from "@material-ui/core/IconButton";
+import Typography from "@material-ui/core/Typography";
+import FlashIcon from "mdi-react/FlashIcon";
+import PlusIcon from "mdi-react/PlusIcon";
+import DeleteIcon from "mdi-react/DeleteIcon";
+import LinkIcon from "mdi-react/LinkIcon";
+import ContentSaveIcon from "mdi-react/ContentSaveIcon";
+import { docs } from "taskcluster-lib-urls";
+import Button from "../Button";
+import SpeedDial from "../SpeedDial";
+import SpeedDialAction from "../SpeedDialAction";
+import DialogAction from "../DialogAction";
+import DateDistance from "../DateDistance";
+import { HOOKS_LAST_FIRE_TYPE } from "../../utils/constants";
+import { hook } from "../../utils/prop-types";
+import Link from "../../utils/Link";
+import removeKeys from "../../utils/removeKeys";
 
 const initialHook = {
   metadata: {
-    name: '',
-    description: '',
-    owner: '',
-    emailOnError: true,
+    name: "",
+    description: "",
+    owner: "",
+    emailOnError: true
   },
   schedule: [],
   task: {
-    provisionerId: 'aws-provisioner-v1',
-    workerType: 'tutorial',
+    provisionerId: "aws-provisioner-v1",
+    workerType: "tutorial",
     payload: {
-      image: 'ubuntu:14.04',
-      command: ['/bin/bash', '-c', 'echo "hello World"'],
-      maxRunTime: 60 * 10,
+      image: "ubuntu:14.04",
+      command: ["/bin/bash", "-c", 'echo "hello World"'],
+      maxRunTime: 60 * 10
     },
     metadata: {
-      name: 'Hook Task',
-      description: 'Task Description',
-      owner: 'name@example.com',
-      source: 'https://tools.taskcluster.net/hooks',
+      name: "Hook Task",
+      description: "Task Description",
+      owner: "name@example.com",
+      source: "https://tools.taskcluster.net/hooks"
     },
-    expires: { $fromNow: '3 months' },
-    deadline: { $fromNow: '6 hours' },
+    expires: { $fromNow: "3 months" },
+    deadline: { $fromNow: "6 hours" }
   },
   triggerSchema: {
-    type: 'object',
+    type: "object",
     properties: {},
-    additionalProperties: false,
-  },
+    additionalProperties: false
+  }
 };
 
 @withStyles(theme => ({
   actionButtonSpan: {
     ...theme.mixins.fab,
-    ...theme.mixins.actionButton,
+    ...theme.mixins.actionButton
   },
   saveHookSpan: {
-    position: 'fixed',
+    position: "fixed",
     bottom: theme.spacing.double,
-    right: theme.spacing.unit * 11,
+    right: theme.spacing.unit * 11
   },
   editorListItem: {
     paddingTop: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'start',
-    '&> :last-child': {
-      marginTop: theme.spacing.unit,
-    },
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "start",
+    "&> :last-child": {
+      marginTop: theme.spacing.unit
+    }
   },
   iconButton: {
     marginRight: -14,
-    '& svg': {
-      fill: theme.palette.text.primary,
-    },
+    "& svg": {
+      fill: theme.palette.text.primary
+    }
   },
   listItemButton: {
-    ...theme.mixins.listItemButton,
+    ...theme.mixins.listItemButton
   },
   successIcon: {
-    ...theme.mixins.successIcon,
+    ...theme.mixins.successIcon
   },
   deleteIcon: {
-    ...theme.mixins.errorIcon,
+    ...theme.mixins.errorIcon
   },
   code: {
-    maxHeight: '70vh',
-    margin: 0,
+    maxHeight: "70vh",
+    margin: 0
   },
   codeEditor: {
-    overflow: 'auto',
-    maxHeight: '70vh',
+    overflow: "auto",
+    maxHeight: "70vh"
   },
   scheduleEntry: {
     paddingTop: 0,
-    paddingBottom: 0,
+    paddingBottom: 0
   },
   subheader: {
-    fontSize: theme.typography.pxToRem(16),
-  },
+    fontSize: theme.typography.pxToRem(16)
+  }
 }))
 /** A form to view/edit/create a hook */
 export default class HookForm extends Component {
@@ -125,7 +128,7 @@ export default class HookForm extends Component {
     onUpdateHook: null,
     onDeleteHook: null,
     actionLoading: false,
-    dialogError: null,
+    dialogError: null
   };
 
   static propTypes = {
@@ -148,20 +151,21 @@ export default class HookForm extends Component {
     /**
      * Callback function fired when the DialogAction component throws an error.
      * */
-    onDialogActionError: func,
+    onDialogActionError: func
   };
 
   state = {
     hook: null,
     // eslint-disable-next-line react/no-unused-state
     previousHook: null,
-    taskInput: '',
-    triggerSchemaInput: '',
-    triggerContextInput: '',
-    scheduleTextField: '',
+    taskInput: "",
+    triggerSchemaInput: "",
+    triggerContextInput: "",
+    scheduleTextField: "",
     taskValidJson: true,
     triggerSchemaValidJson: true,
     validation: {},
+    tabValue: 0
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -175,21 +179,21 @@ export default class HookForm extends Component {
       hook: props.hook,
       previousHook: props.hook,
       taskInput: JSON.stringify(
-        removeKeys(cloneDeep(hook.task), ['__typename']),
+        removeKeys(cloneDeep(hook.task), ["__typename"]),
         null,
         2
       ),
       triggerSchemaInput: JSON.stringify(hook.triggerSchema, null, 2),
       triggerContextInput: JSON.stringify({}),
-      scheduleTextField: '',
+      scheduleTextField: "",
       taskValidJson: true,
       triggerSchemaValidJson: true,
       validation: {
         owner: {
           error: false,
-          message: '',
-        },
-      },
+          message: ""
+        }
+      }
     };
   }
 
@@ -200,27 +204,27 @@ export default class HookForm extends Component {
         name: hook.metadata.name,
         description: hook.metadata.description,
         owner: hook.metadata.owner,
-        emailOnError: hook.metadata.emailOnError,
+        emailOnError: hook.metadata.emailOnError
       },
       schedule: hook.schedule,
       task: hook.task,
-      triggerSchema: hook.triggerSchema,
+      triggerSchema: hook.triggerSchema
     };
 
-    return removeKeys(definition, ['__typename']);
+    return removeKeys(definition, ["__typename"]);
   };
 
   handleCreateHook = () => {
     const { onCreateHook } = this.props;
     const {
-      hook: { hookId, hookGroupId },
+      hook: { hookId, hookGroupId }
     } = this.state;
 
     onCreateHook &&
       onCreateHook({
         hookId,
         hookGroupId,
-        payload: this.getHookDefinition(),
+        payload: this.getHookDefinition()
       });
   };
 
@@ -229,33 +233,33 @@ export default class HookForm extends Component {
 
     this.setState({
       hook: assocPath(
-        ['schedule'],
+        ["schedule"],
         hook.schedule.filter(cronJob => cronJob !== name),
         hook
-      ),
+      )
     });
   };
 
   handleDeleteHook = () => {
     const { onDeleteHook } = this.props;
     const {
-      hook: { hookId, hookGroupId },
+      hook: { hookId, hookGroupId }
     } = this.state;
 
     onDeleteHook &&
       onDeleteHook({
         hookId,
-        hookGroupId,
+        hookGroupId
       });
   };
 
   handleEmailOnErrorChange = () => {
     this.setState({
       hook: assocPath(
-        ['metadata', 'emailOnError'],
+        ["metadata", "emailOnError"],
         !this.state.hook.metadata.emailOnError,
         this.state.hook
-      ),
+      )
     });
   };
 
@@ -267,12 +271,12 @@ export default class HookForm extends Component {
     const { hook, scheduleTextField } = this.state;
 
     this.setState({
-      scheduleTextField: '',
+      scheduleTextField: "",
       hook: assocPath(
-        ['schedule'],
+        ["schedule"],
         this.state.hook.schedule.concat(scheduleTextField),
         hook
-      ),
+      )
     });
   };
 
@@ -282,13 +286,13 @@ export default class HookForm extends Component {
     try {
       this.setState({
         taskInput: value,
-        hook: assocPath(['task'], JSON.parse(value), hook),
-        taskValidJson: true,
+        hook: assocPath(["task"], JSON.parse(value), hook),
+        taskValidJson: true
       });
     } catch (err) {
       this.setState({
         taskInput: value,
-        taskValidJson: false,
+        taskValidJson: false
       });
     }
   };
@@ -301,13 +305,13 @@ export default class HookForm extends Component {
     const { onTriggerHook } = this.props;
     const {
       hook: { hookId, hookGroupId },
-      triggerContextInput,
+      triggerContextInput
     } = this.state;
 
     return onTriggerHook({
       hookId,
       hookGroupId,
-      payload: JSON.parse(triggerContextInput),
+      payload: JSON.parse(triggerContextInput)
     });
   };
 
@@ -315,13 +319,13 @@ export default class HookForm extends Component {
     try {
       this.setState({
         triggerSchemaInput: value,
-        hook: assocPath(['triggerSchema'], JSON.parse(value), this.state.hook),
-        triggerSchemaValidJson: true,
+        hook: assocPath(["triggerSchema"], JSON.parse(value), this.state.hook),
+        triggerSchemaValidJson: true
       });
     } catch (err) {
       this.setState({
         triggerSchemaValidJson: false,
-        triggerSchemaInput: value,
+        triggerSchemaInput: value
       });
     }
   };
@@ -329,14 +333,14 @@ export default class HookForm extends Component {
   handleUpdateHook = () => {
     const { onUpdateHook } = this.props;
     const {
-      hook: { hookId, hookGroupId },
+      hook: { hookId, hookGroupId }
     } = this.state;
 
     onUpdateHook &&
       onUpdateHook({
         hookId,
         hookGroupId,
-        payload: this.getHookDefinition(),
+        payload: this.getHookDefinition()
       });
   };
 
@@ -345,7 +349,7 @@ export default class HookForm extends Component {
       hook,
       taskValidJson,
       triggerSchemaValidJson,
-      validation,
+      validation
     } = this.state;
 
     return (
@@ -361,39 +365,43 @@ export default class HookForm extends Component {
 
   handleHookGroupIdChange = e =>
     this.setState({
-      hook: assocPath(['hookGroupId'], e.target.value, this.state.hook),
+      hook: assocPath(["hookGroupId"], e.target.value, this.state.hook)
     });
 
   handleHookIdChange = e =>
     this.setState({
-      hook: assocPath(['hookId'], e.target.value, this.state.hook),
+      hook: assocPath(["hookId"], e.target.value, this.state.hook)
     });
 
   handleNameChange = e =>
     this.setState({
-      hook: assocPath(['metadata', 'name'], e.target.value, this.state.hook),
+      hook: assocPath(["metadata", "name"], e.target.value, this.state.hook)
     });
 
   handleOwnerChange = e => {
     this.setState({
-      hook: assocPath(['metadata', 'owner'], e.target.value, this.state.hook),
+      hook: assocPath(["metadata", "owner"], e.target.value, this.state.hook),
       validation: {
         owner: {
           error: !e.currentTarget.validity.valid,
-          message: e.currentTarget.validationMessage,
-        },
-      },
+          message: e.currentTarget.validationMessage
+        }
+      }
     });
   };
 
   handleDescriptionChange = e =>
     this.setState({
       hook: assocPath(
-        ['metadata', 'description'],
+        ["metadata", "description"],
         e.target.value,
         this.state.hook
-      ),
+      )
     });
+
+  handleTabChange = (event, value) => {
+    this.setState({ tabValue: value });
+  };
 
   render() {
     const {
@@ -404,7 +412,7 @@ export default class HookForm extends Component {
       isNewHook,
       onActionDialogClose,
       onDialogActionError,
-      onDialogOpen,
+      onDialogOpen
     } = this.props;
     const {
       scheduleTextField,
@@ -413,6 +421,7 @@ export default class HookForm extends Component {
       triggerContextInput,
       hook,
       validation,
+      tabValue
     } = this.state;
     const isHookDirty = !equals(hook, this.props.hook);
     /* eslint-disable-next-line no-underscore-dangle */
@@ -485,16 +494,22 @@ export default class HookForm extends Component {
             />
           </ListItem>
           <ListItem>
-            <TextField
-              label="Description"
-              name="description"
-              placeholder="Hook description (markdown)"
-              onChange={this.handleDescriptionChange}
-              fullWidth
-              multiline
-              rows={5}
-              value={hook.metadata.description}
-            />
+            <Tabs value={this.state.tabState} onChange={this.handleTabChange}>
+              <Tab label="Description" />
+              <Tab label="Preview" />
+            </Tabs>
+            {tabValue === 0 && (
+              <TextField
+                onChange={this.handleDescriptionChange}
+                fullWidth
+                multiline
+                rows={5}
+                value={hook.metadata.description}
+              />
+            )}
+            {tabValue === 1 && (
+              <Markdown>{hook.metadata.description}</Markdown>
+            )}
           </ListItem>
           <ListItem>
             <FormGroup row>
@@ -516,7 +531,7 @@ export default class HookForm extends Component {
                   primary="Last Fired"
                   secondary={
                     lastFireTypeName === HOOKS_LAST_FIRE_TYPE.NO_FIRE ? (
-                      'n/a'
+                      "n/a"
                     ) : (
                       <DateDistance from={hook.status.lastFire.time} />
                     )
@@ -528,7 +543,8 @@ export default class HookForm extends Component {
                   button
                   component={Link}
                   className={classes.listItemButton}
-                  to={`/tasks/${hook.status.lastFire.taskId}`}>
+                  to={`/tasks/${hook.status.lastFire.taskId}`}
+                >
                   <ListItemText
                     primary="Last Fired Result"
                     secondary={hook.status.lastFire.taskId}
@@ -541,7 +557,7 @@ export default class HookForm extends Component {
                     primary="Last Fired Result"
                     secondary={
                       lastFireTypeName === HOOKS_LAST_FIRE_TYPE.NO_FIRE ? (
-                        'n/a'
+                        "n/a"
                       ) : (
                         <pre>
                           {JSON.stringify(hook.status.lastFire.error, null, 2)}
@@ -558,7 +574,7 @@ export default class HookForm extends Component {
                     hook.status.nextScheduledDate ? (
                       <DateDistance from={hook.status.nextScheduledDate} />
                     ) : (
-                      'n/a'
+                      "n/a"
                     )
                   }
                 />
@@ -572,13 +588,14 @@ export default class HookForm extends Component {
                   <TextField
                     helperText={
                       <span>
-                        See{' '}
+                        See{" "}
                         <a
                           href="https://www.npmjs.com/package/cron-parser"
                           target="_blank"
-                          rel="noopener noreferrer">
+                          rel="noopener noreferrer"
+                        >
                           cron-parser
-                        </a>{' '}
+                        </a>{" "}
                         for format information. Times are in UTC.
                       </span>
                     }
@@ -593,7 +610,8 @@ export default class HookForm extends Component {
               />
               <IconButton
                 className={classes.iconButton}
-                onClick={this.handleNewCronJob}>
+                onClick={this.handleNewCronJob}
+              >
                 <PlusIcon />
               </IconButton>
             </ListItem>
@@ -603,7 +621,8 @@ export default class HookForm extends Component {
                 <IconButton
                   className={classes.iconButton}
                   name={cronJob}
-                  onClick={this.handleDeleteCronJob}>
+                  onClick={this.handleDeleteCronJob}
+                >
                   <DeleteIcon />
                 </IconButton>
               </ListItem>
@@ -614,31 +633,34 @@ export default class HookForm extends Component {
               <ListSubheader className={classes.subheader}>
                 Task Template *
               </ListSubheader>
-            }>
+            }
+          >
             <ListItem className={classes.editorListItem}>
               <Typography variant="caption">
                 <span>
-                  When the hook fires, this template is rendered with{' '}
+                  When the hook fires, this template is rendered with{" "}
                   <a
                     href="https://taskcluster.github.io/json-e/"
                     target="_blank"
-                    rel="noopener noreferrer">
+                    rel="noopener noreferrer"
+                  >
                     JSON-e
-                  </a>{' '}
-                  to create the the task definition. See{' '}
+                  </a>{" "}
+                  to create the the task definition. See{" "}
                   {
                     <a
                       target="_blank"
                       rel="noopener noreferrer"
                       href={docs(
                         process.env.TASKCLUSTER_ROOT_URL,
-                        'reference/core/taskcluster-hooks/docs/firing-hooks'
-                      )}>
+                        "reference/core/taskcluster-hooks/docs/firing-hooks"
+                      )}
+                    >
                       {'"'}
                       firing hooks
                       {'"'}
                     </a>
-                  }{' '}
+                  }{" "}
                   for more information.
                 </span>
               </Typography>
@@ -654,7 +676,8 @@ export default class HookForm extends Component {
               <ListSubheader className={classes.subheader}>
                 Trigger Schema *
               </ListSubheader>
-            }>
+            }
+          >
             <ListItem className={classes.editorListItem}>
               <Typography variant="caption">
                 The payload to <code>triggerHook</code> must match this schema.
@@ -670,12 +693,13 @@ export default class HookForm extends Component {
         {isNewHook ? (
           <Button
             spanProps={{ className: classes.actionButtonSpan }}
-            tooltipProps={{ title: 'Save Hook' }}
+            tooltipProps={{ title: "Save Hook" }}
             requiresAuth
             classes={{ root: classes.successIcon }}
             variant="round"
             disabled={!this.validHook() || actionLoading || !isHookDirty}
-            onClick={this.handleCreateHook}>
+            onClick={this.handleCreateHook}
+          >
             <ContentSaveIcon />
           </Button>
         ) : (
@@ -685,14 +709,15 @@ export default class HookForm extends Component {
                 className: classNames(
                   classes.actionButtonSpan,
                   classes.saveHookSpan
-                ),
+                )
               }}
-              tooltipProps={{ title: 'Save Hook' }}
+              tooltipProps={{ title: "Save Hook" }}
               requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
               disabled={!this.validHook() || actionLoading || !isHookDirty}
-              onClick={this.handleUpdateHook}>
+              onClick={this.handleUpdateHook}
+            >
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
@@ -703,7 +728,7 @@ export default class HookForm extends Component {
                 onClick={this.handleDeleteHook}
                 className={classes.deleteIcon}
                 ButtonProps={{
-                  disabled: actionLoading,
+                  disabled: actionLoading
                 }}
                 tooltipTitle="Delete Hook"
               />
@@ -714,7 +739,7 @@ export default class HookForm extends Component {
                 onClick={onDialogOpen}
                 className={classes.successIcon}
                 ButtonProps={{
-                  disabled: !this.validHook() || actionLoading,
+                  disabled: !this.validHook() || actionLoading
                 }}
                 tooltipTitle="Trigger Hook"
               />
@@ -734,10 +759,10 @@ export default class HookForm extends Component {
             body={
               <Fragment>
                 <Typography gutterBottom>
-                  Trigger Hook{' '}
+                  Trigger Hook{" "}
                   <code>
                     {hook.hookGroupId}/{hook.hookId}
-                  </code>{' '}
+                  </code>{" "}
                   with the following context:
                 </Typography>
                 <Grid container spacing={16}>
